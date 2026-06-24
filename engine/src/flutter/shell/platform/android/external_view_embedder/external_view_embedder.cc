@@ -224,13 +224,24 @@ void AndroidExternalViewEmbedder::PrepareFlutterView(
   // the existing surfaces in the pool can't be recycled.
   if (frame_size_ != frame_size) {
     DestroySurfaces();
+
+    // This should not block to prevent deadlocks with
+    // setViewportMetrics.
+    task_runners_.GetPlatformTaskRunner()->PostTask(fml::MakeCopyable(
+        [jni_facade = jni_facade_, frame_size = frame_size]() {
+          jni_facade->MaybeResizeSurfaceView(frame_size.width,
+                                             frame_size.height);
+        }));
   }
   surface_pool_->SetFrameSize(frame_size);
+<<<<<<< HEAD
 
   task_runners_.GetPlatformTaskRunner()->PostTask(
       fml::MakeCopyable([jni_facade = jni_facade_, frame_size = frame_size]() {
         jni_facade->MaybeResizeSurfaceView(frame_size.width, frame_size.height);
       }));
+=======
+>>>>>>> e1fd963c6f6922bd32afde2e9698a363cd0406d2
 
   frame_size_ = frame_size;
   device_pixel_ratio_ = device_pixel_ratio;
